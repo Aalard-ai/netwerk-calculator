@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Bandwidth Calculator</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background-color: #f0f2f5; }
+        .card { background: white; padding: 2.5rem; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        h2 { color: #1a73e8; text-align: center; margin-bottom: 1.5rem; }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #444; }
+        .row { display: flex; gap: 10px; }
+        input, select { padding: 12px; border: 2px solid #e1e4e8; border-radius: 8px; font-size: 16px; outline: none; }
+        input { flex: 2; }
+        select { flex: 1; background-color: #fff; }
+        
+        .results-container { display: flex; gap: 15px; margin-top: 25px; }
+        .result-box { flex: 1; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #d1e3ff; }
+        .theoretical { background: #f8faff; }
+        .real-world { background: #fff4e5; border-color: #ffe0b2; }
+        
+        .result-label { font-size: 12px; color: #666; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
+        .result-time { font-size: 1.2rem; font-weight: bold; color: #1a73e8; }
+        .real-world .result-time { color: #e65100; }
+        .info-text { font-size: 12px; color: #888; margin-top: 15px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Overdracht Calculator</h2>
+    
+    <div class="input-group">
+        <label>Bestandsgrootte</label>
+        <div class="row">
+            <input type="number" id="fileSize" value="35" oninput="calculate()">
+            <select id="sizeUnit" onchange="calculate()">
+                <option value="1">MB</option>
+                <option value="1000">GB</option>
+                <option value="1000000" selected>TB</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="input-group">
+        <label>Netwerksnelheid</label>
+        <div class="row">
+            <input type="number" id="speed" value="1" oninput="calculate()">
+            <select id="speedUnit" onchange="calculate()">
+                <option value="1">Mbps</option>
+                <option value="1000" selected>Gbps</option>
+                <option value="10000">10 Gbps</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="results-container">
+        <div class="result-box theoretical">
+            <div class="result-label">Theoretisch (100%)</div>
+            <div class="result-time" id="outputTheo">0s</div>
+        </div>
+        <div class="result-box real-world">
+            <div class="result-label">Echte Wereld (90%)</div>
+            <div class="result-time" id="outputReal">0s</div>
+        </div>
+    </div>
+    
+    <p class="info-text">* Gebaseerd op decimale TB (10^12 bytes) en 10% TCP/IP overhead.</p>
+</div>
+
+<script>
+function calculate() {
+    const size = parseFloat(document.getElementById('fileSize').value);
+    const sizeUnit = parseFloat(document.getElementById('sizeUnit').value);
+    const speed = parseFloat(document.getElementById('speed').value);
+    const speedUnit = parseFloat(document.getElementById('speedUnit').value);
+
+    if (size > 0 && speed > 0) {
+        const sizeInMb = size * sizeUnit * 8; 
+        const speedInMbps = speed * speedUnit;
+        
+        const secondsTheo = sizeInMb / speedInMbps;
+        const secondsReal = secondsTheo / 0.9; // 10% trager door overhead
+
+        document.getElementById('outputTheo').innerText = formatTime(secondsTheo);
+        document.getElementById('outputReal').innerText = formatTime(secondsReal);
+    } else {
+        document.getElementById('outputTheo').innerText = "---";
+        document.getElementById('outputReal').innerText = "---";
+    }
+}
+
+function formatTime(seconds) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.round(seconds % 60);
+
+    let res = "";
+    if (h > 0) res += h + "u ";
+    if (m > 0) res += m + "m ";
+    res += s + "s";
+    return res.trim();
+}
+
+calculate();
+</script>
+
+</body>
+</html>
