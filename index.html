@@ -1,38 +1,93 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Bandwidth Calculator</title>
+    <title>Network Transfer Calculator</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background-color: #f0f2f5; }
-        .card { background: white; padding: 2.5rem; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
-        h2 { color: #1a73e8; text-align: center; margin-bottom: 1.5rem; }
-        .input-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: #444; }
-        .row { display: flex; gap: 10px; }
-        input, select { padding: 12px; border: 2px solid #e1e4e8; border-radius: 8px; font-size: 16px; outline: none; }
+        :root {
+            --primary: #2563eb;
+            --secondary: #f97316;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+
+        body { 
+            font-family: 'Inter', -apple-system, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            background-color: var(--bg);
+            color: var(--text);
+        }
+
+        .card { 
+            background: var(--card); 
+            padding: 2.5rem; 
+            border-radius: 20px; 
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); 
+            width: 100%; 
+            max-width: 480px; 
+        }
+
+        h2 { 
+            color: var(--primary); 
+            text-align: center; 
+            margin-bottom: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+        }
+
+        .input-group { margin-bottom: 1.5rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem; color: #64748b; }
+        
+        .row { display: flex; gap: 0.75rem; }
+        input, select { 
+            padding: 0.75rem; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 10px; 
+            font-size: 1rem; 
+            outline: none;
+            transition: all 0.2s;
+        }
         input { flex: 2; }
-        select { flex: 1; background-color: #fff; }
+        input:focus { border-color: var(--primary); ring: 2px solid var(--primary); }
+        select { flex: 1; background-color: #f1f5f9; cursor: pointer; }
+
+        .results-container { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 1rem; 
+            margin-top: 2rem; 
+        }
+
+        .result-box { 
+            padding: 1.25rem; 
+            border-radius: 15px; 
+            text-align: center; 
+            transition: transform 0.2s;
+        }
         
-        .results-container { display: flex; gap: 15px; margin-top: 25px; }
-        .result-box { flex: 1; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #d1e3ff; }
-        .theoretical { background: #f8faff; }
-        .real-world { background: #fff4e5; border-color: #ffe0b2; }
+        .theoretical { background: #eff6ff; border: 1px solid #dbeafe; }
+        .real-world { background: #fff7ed; border: 1px solid #ffedd5; }
         
-        .result-label { font-size: 12px; color: #666; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
-        .result-time { font-size: 1.2rem; font-weight: bold; color: #1a73e8; }
-        .real-world .result-time { color: #e65100; }
-        .info-text { font-size: 12px; color: #888; margin-top: 15px; text-align: center; }
+        .result-label { font-size: 0.75rem; color: #64748b; margin-bottom: 0.5rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; }
+        .result-time { font-size: 1.25rem; font-weight: 800; color: var(--primary); }
+        .real-world .result-time { color: var(--secondary); }
+        
+        .footer-note { font-size: 0.75rem; color: #94a3b8; margin-top: 2rem; text-align: center; line-height: 1.4; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>Overdracht Calculator</h2>
+    <h2>Transfer Calculator</h2>
     
     <div class="input-group">
-        <label>Bestandsgrootte</label>
+        <label>File Size</label>
         <div class="row">
             <input type="number" id="fileSize" value="35" oninput="calculate()">
             <select id="sizeUnit" onchange="calculate()">
@@ -44,7 +99,7 @@
     </div>
 
     <div class="input-group">
-        <label>Netwerksnelheid</label>
+        <label>Link Speed</label>
         <div class="row">
             <input type="number" id="speed" value="1" oninput="calculate()">
             <select id="speedUnit" onchange="calculate()">
@@ -57,16 +112,19 @@
 
     <div class="results-container">
         <div class="result-box theoretical">
-            <div class="result-label">Theoretisch (100%)</div>
-            <div class="result-time" id="outputTheo">0s</div>
+            <div class="result-label">Theoretical (100%)</div>
+            <div id="outputTheo" class="result-time">0s</div>
         </div>
         <div class="result-box real-world">
-            <div class="result-label">Echte Wereld (90%)</div>
-            <div class="result-time" id="outputReal">0s</div>
+            <div class="result-label">Real World (90%)</div>
+            <div id="outputReal" class="result-time">0s</div>
         </div>
     </div>
     
-    <p class="info-text">* Gebaseerd op decimale TB (10^12 bytes) en 10% TCP/IP overhead.</p>
+    <p class="footer-note">
+        Calculated using decimal units (10^n).<br>
+        Real-world estimate includes 10% TCP/IP protocol overhead.
+    </p>
 </div>
 
 <script>
@@ -77,11 +135,12 @@ function calculate() {
     const speedUnit = parseFloat(document.getElementById('speedUnit').value);
 
     if (size > 0 && speed > 0) {
+        // Convert to Megabits for calculation
         const sizeInMb = size * sizeUnit * 8; 
         const speedInMbps = speed * speedUnit;
         
         const secondsTheo = sizeInMb / speedInMbps;
-        const secondsReal = secondsTheo / 0.9; // 10% trager door overhead
+        const secondsReal = secondsTheo / 0.9; // Adjusting for 90% efficiency
 
         document.getElementById('outputTheo').innerText = formatTime(secondsTheo);
         document.getElementById('outputReal').innerText = formatTime(secondsReal);
@@ -92,17 +151,19 @@ function calculate() {
 }
 
 function formatTime(seconds) {
+    if (seconds < 1) return "< 1s";
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = Math.round(seconds % 60);
 
     let res = "";
-    if (h > 0) res += h + "u ";
+    if (h > 0) res += h + "h ";
     if (m > 0) res += m + "m ";
     res += s + "s";
     return res.trim();
 }
 
+// Initialize on load
 calculate();
 </script>
 
